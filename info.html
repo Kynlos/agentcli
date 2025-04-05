@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentCLI - Autonomous AI Assistant</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- AOS (Animate On Scroll) -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <!-- Prism.js for code highlighting -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+
+    <!-- TailwindCSS Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                            950: '#431407',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+        .gradient-text {
+            background: linear-gradient(to right, #f97316, #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .terminal {
+            background-color: #1e1e1e;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #f8f8f2;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .terminal-header {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .terminal-button-red {
+            background-color: #ff5f56;
+        }
+
+        .terminal-button-yellow {
+            background-color: #ffbd2e;
+        }
+
+        .terminal-button-green {
+            background-color: #27c93f;
+        }
+
+        .code-block {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .code-block-header {
+            background-color: #2d2d2d;
+            padding: 0.5rem 1rem;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+
+        .code-block pre {
+            margin-top: 0 !important;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+        }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .terminal-content {
+            padding: 0.5rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Custom scrollbar for code blocks */
+        pre::-webkit-scrollbar, .terminal-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        pre::-webkit-scrollbar-track, .terminal-content::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb, .terminal-content::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        pre::-webkit-scrollbar-thumb:hover, .terminal-content::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-200 font-sans">
+    <!-- Navigation -->
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-primary-500 text-2xl font-bold">AgentCLI</span>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:items-center md:space-x-4">
+                        <a href="#features" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium">Features</a>
+                        <a href="#how-it-works" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium">How It Works</a>
+                        <a href="#examples" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium">Examples</a>
+                        <a href="#getting-started" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium">Getting Started</a>
+                        <a href="#faq" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="#" class="text-gray-300 hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                        <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+                        </svg>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative overflow-hidden bg-gray-900 py-24 px-4 sm:px-6 lg:px-8">
+        <div class="absolute inset-0">
+            <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-primary-900 opacity-90"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto">
+            <div class="text-center">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
+                    <span class="block text-white">Autonomous AI Assistant</span>
+                    <span class="block gradient-text mt-2">AgentCLI 2.0</span>
+                </h1>
+                <p class="mt-6 max-w-3xl mx-auto text-xl text-gray-300">
+                    A powerful, autonomous AI assistant that can execute commands, manage files, browse the web, and more - all from your terminal. Powered by Google's Gemini API and designed for developers, researchers, and power users who want to harness the power of AI in their workflow.
+                </p>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-400">
+                    AgentCLI 2.0 features enhanced performance, expanded capabilities, and a more intuitive interaction model. With its think-act-observe loop, it can understand complex requests, break them down into manageable steps, and execute them with precision while learning from each interaction.
+                </p>
+                <div class="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
+                    <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
+                        <a href="#getting-started" class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 sm:px-8">
+                            Get Started
+                        </a>
+                        <a href="#examples" class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-600 bg-white hover:bg-gray-50 sm:px-8">
+                            View Examples
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Features Section -->
+        <section id="features" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
+                        Powerful Features
+                    </h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-300" data-aos="fade-up" data-aos-delay="100">
+                        AgentCLI comes packed with a wide range of capabilities to help you accomplish tasks efficiently.
+                    </p>
+                </div>
+
+                <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <!-- Feature 1 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="150">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">File Operations</h3>
+                        <p class="mt-2 text-gray-300">
+                            Create, read, edit, and delete files with ease. Search for files and find text patterns across your codebase.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="200">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Command Execution</h3>
+                        <p class="mt-2 text-gray-300">
+                            Execute shell commands and run Python or JavaScript code directly from the agent with full output capture.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="250">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Web Browsing</h3>
+                        <p class="mt-2 text-gray-300">
+                            Browse websites, take screenshots, and perform web searches all from your terminal.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="300">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">File Comparison</h3>
+                        <p class="mt-2 text-gray-300">
+                            Compare files with colorized diff output to easily spot changes between versions.
+                        </p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="350">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Clipboard Operations</h3>
+                        <p class="mt-2 text-gray-300">
+                            Copy text to and from the clipboard, making it easy to transfer content between applications.
+                        </p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="400">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">File Downloads</h3>
+                        <p class="mt-2 text-gray-300">
+                            Download files from the web with progress tracking and automatic directory creation.
+                        </p>
+                    </div>
+
+                    <!-- Feature 7 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="450">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Memory Management</h3>
+                        <p class="mt-2 text-gray-300">
+                            Persistent memory across sessions with automatic state saving and loading.
+                        </p>
+                    </div>
+
+                    <!-- Feature 8 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="500">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Performance Optimizations</h3>
+                        <p class="mt-2 text-gray-300">
+                            Response caching, parallel processing, and progress bars for long-running operations.
+                        </p>
+                    </div>
+
+                    <!-- Feature 9 -->
+                    <div class="feature-card bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="550">
+                        <div class="h-12 w-12 rounded-md bg-primary-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-xl font-medium text-white">Text Summarization</h3>
+                        <p class="mt-2 text-gray-300">
+                            Summarize long text content to extract key information quickly and efficiently.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-950">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
+                        How AgentCLI Works
+                    </h2>
+                    <p class="mt-3 max-w-3xl mx-auto text-lg text-gray-300" data-aos="fade-up" data-aos-delay="100">
+                        AgentCLI operates in a sophisticated think-act-observe loop, leveraging Google's Gemini API to accomplish tasks autonomously with remarkable precision and adaptability.
+                    </p>
+                    <p class="mt-2 max-w-3xl mx-auto text-md text-gray-400" data-aos="fade-up" data-aos-delay="150">
+                        The agent maintains a comprehensive memory system that tracks conversation history, file operations, web browsing state, and execution results, allowing it to build context and make informed decisions throughout your session.
+                    </p>
+                </div>
+
+                <div class="mt-16">
+                    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+                        <!-- Step 1 -->
+                        <div class="mt-10 lg:mt-0" data-aos="fade-up" data-aos-delay="150">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white mx-auto">
+                                <span class="text-lg font-bold">1</span>
+                            </div>
+                            <div class="mt-5 text-center">
+                                <h3 class="text-lg font-medium text-white">Think</h3>
+                                <p class="mt-2 text-base text-gray-300">
+                                    The agent analyzes your request, current state, and previous observations to formulate a plan of action. It leverages the Gemini API's advanced reasoning capabilities to understand context, identify required steps, and anticipate potential challenges.
+                                </p>
+                                <p class="mt-2 text-sm text-gray-400">
+                                    During this phase, AgentCLI considers available tools, file system state, memory of previous actions, and the specific requirements of your request to develop an optimal execution strategy.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="mt-10 lg:mt-0" data-aos="fade-up" data-aos-delay="200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white mx-auto">
+                                <span class="text-lg font-bold">2</span>
+                            </div>
+                            <div class="mt-5 text-center">
+                                <h3 class="text-lg font-medium text-white">Act</h3>
+                                <p class="mt-2 text-base text-gray-300">
+                                    Based on its analysis, the agent executes a specific action such as creating a file, running a command, browsing the web, or any of its 17+ specialized capabilities.
+                                </p>
+                                <p class="mt-2 text-sm text-gray-400">
+                                    Each action is executed with precise parameters derived from the thinking phase. The agent handles complex operations like file downloads with progress tracking, code execution with proper error handling, and web interactions with appropriate waiting periods for page loading.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="mt-10 lg:mt-0" data-aos="fade-up" data-aos-delay="250">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white mx-auto">
+                                <span class="text-lg font-bold">3</span>
+                            </div>
+                            <div class="mt-5 text-center">
+                                <h3 class="text-lg font-medium text-white">Observe</h3>
+                                <p class="mt-2 text-base text-gray-300">
+                                    The agent observes the results of its action, learns from any errors, and updates its understanding to inform the next step in the process.
+                                </p>
+                                <p class="mt-2 text-sm text-gray-400">
+                                    This critical feedback loop allows AgentCLI to adapt to unexpected outcomes, recover from errors, and refine its approach. The agent stores these observations in its memory system, building a comprehensive understanding of the task's progress and remaining steps needed for completion.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Diagram -->
+                    <div class="mt-16 bg-gray-800 rounded-lg p-6 border border-gray-700" data-aos="fade-up" data-aos-delay="300">
+                        <h3 class="text-xl font-medium text-white mb-4 text-center">Agent Workflow</h3>
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-4">
+                            <div class="bg-gray-900 rounded-lg p-4 flex-1 border border-gray-700">
+                                <h4 class="text-primary-400 font-medium mb-2">User Input</h4>
+                                <p class="text-gray-300 text-sm">"Create a Python script that fetches weather data"</p>
+                            </div>
+                            <div class="text-primary-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-4 flex-1 border border-gray-700">
+                                <h4 class="text-primary-400 font-medium mb-2">Agent Thinking</h4>
+                                <p class="text-gray-300 text-sm">"I need to create a Python script that uses a weather API..."</p>
+                            </div>
+                            <div class="text-primary-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </div>
+                            <div class="bg-gray-900 rounded-lg p-4 flex-1 border border-gray-700">
+                                <h4 class="text-primary-400 font-medium mb-2">Action Execution</h4>
+                                <p class="text-gray-300 text-sm">CREATE_FILE(filename="weather.py", content="import requests...")</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Architecture -->
+                    <div class="mt-20 bg-gray-800 rounded-lg p-8 border border-gray-700" data-aos="fade-up" data-aos-delay="350">
+                        <h3 class="text-2xl font-medium text-white mb-6 text-center">Technical Architecture</h3>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-medium text-primary-400 mb-4">Core Components</h4>
+                                <ul class="space-y-3 text-gray-300">
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">LLM Integration:</strong> Seamless connection to Google's Gemini API with optimized prompting and response handling.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Memory System:</strong> Sophisticated state management tracking conversation history, file operations, and execution results.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Action Framework:</strong> Extensible system for defining, parsing, and executing actions with proper error handling.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Web Integration:</strong> Headless browser control via Puppeteer for web browsing, screenshots, and JavaScript execution.</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-xl font-medium text-primary-400 mb-4">Advanced Features</h4>
+                                <ul class="space-y-3 text-gray-300">
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Response Caching:</strong> Intelligent caching system that reduces API calls and improves response times for similar queries.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Parallel Processing:</strong> Multi-threaded execution for long-running operations with progress tracking and cancellation support.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Safety Mechanisms:</strong> Confirmation prompts for risky actions, file size limits, and execution timeouts to prevent unintended consequences.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="h-6 w-6 text-primary-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span><strong class="text-white">Cross-Platform Support:</strong> Designed to work seamlessly across Windows, macOS, and Linux with platform-specific adaptations.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h4 class="text-xl font-medium text-primary-400 mb-4">System Requirements</h4>
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 class="font-medium text-white mb-2">Minimum</h5>
+                                    <ul class="text-sm text-gray-400 space-y-1">
+                                        <li>• Python 3.8+</li>
+                                        <li>• 4GB RAM</li>
+                                        <li>• 1GB free disk space</li>
+                                        <li>• Internet connection</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 class="font-medium text-white mb-2">Recommended</h5>
+                                    <ul class="text-sm text-gray-400 space-y-1">
+                                        <li>• Python 3.9+</li>
+                                        <li>• 8GB RAM</li>
+                                        <li>• 2GB free disk space</li>
+                                        <li>• Broadband internet</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 class="font-medium text-white mb-2">Dependencies</h5>
+                                    <ul class="text-sm text-gray-400 space-y-1">
+                                        <li>• Google Generative AI</li>
+                                        <li>• Colorama</li>
+                                        <li>• Requests</li>
+                                        <li>• Optional: tqdm, Pillow</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section id="examples" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
+                        See AgentCLI in Action
+                    </h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-300" data-aos="fade-up" data-aos-delay="100">
+                        Explore examples of how AgentCLI can help you accomplish various tasks.
+                    </p>
+                </div>
+
+                <div class="mt-16 space-y-16">
+                    <!-- Example 1: File Operations -->
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700" data-aos="fade-up" data-aos-delay="150">
+                        <div class="p-6">
+                            <h3 class="text-xl font-medium text-white">File Operations</h3>
+                            <p class="mt-2 text-gray-300">
+                                Create, read, edit, and search files with ease.
+                            </p>
+                        </div>
+                        <div class="terminal">
+                            <div class="terminal-header">
+                                <div class="terminal-button terminal-button-red"></div>
+                                <div class="terminal-button terminal-button-yellow"></div>
+                                <div class="terminal-button terminal-button-green"></div>
+                            </div>
+                            <div class="terminal-content">
+                                <p class="text-green-400">User: Create a Python script that calculates factorial</p>
+                                <p class="text-gray-400">&gt; Thinking...</p>
+                                <p class="text-blue-400">&gt; Creating factorial.py</p>
+                                <p class="text-white">CREATE_FILE(filename="factorial.py", content="def factorial(n):\n    if n == 0 or n == 1:\n        return 1\n    else:\n        return n * factorial(n-1)\n\nif __name__ == '__main__':\n    num = int(input('Enter a number: '))\n    print(f'The factorial of {num} is {factorial(num)}')")</p>
+                                <p class="text-green-400">File created successfully: factorial.py</p>
+                                <p class="text-green-400">User: Find all Python files in the current directory</p>
+                                <p class="text-gray-400">&gt; Thinking...</p>
+                                <p class="text-blue-400">&gt; Searching for Python files</p>
+                                <p class="text-white">LIST_FILES(pattern="*.py")</p>
+                                <p class="text-green-400">Found 3 file(s) in '.' matching '*.py':</p>
+                                <p class="text-white">factorial.py (215 bytes, modified: 2023-06-15 14:32:45)</p>
+                                <p class="text-white">agent_cli.py (125.4 KB, modified: 2023-06-15 10:15:22)</p>
+                                <p class="text-white">utils.py (3.2 KB, modified: 2023-06-14 09:45:11)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example 2: Web Browsing -->
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700" data-aos="fade-up" data-aos-delay="200">
+                        <div class="p-6">
+                            <h3 class="text-xl font-medium text-white">Web Browsing & Searching</h3>
+                            <p class="mt-2 text-gray-300">
+                                Browse websites and search the web directly from your terminal.
+                            </p>
+                        </div>
+                        <div class="terminal">
+                            <div class="terminal-header">
+                                <div class="terminal-button terminal-button-red"></div>
+                                <div class="terminal-button terminal-button-yellow"></div>
+                                <div class="terminal-button terminal-button-green"></div>
+                            </div>
+                            <div class="terminal-content">
+                                <p class="text-green-400">User: Search for the latest Python libraries for data science</p>
+                                <p class="text-gray-400">&gt; Thinking...</p>
+                                <p class="text-blue-400">&gt; Performing web search</p>
+                                <p class="text-white">SEARCH_WEB(query="latest Python libraries for data science 2023")</p>
+                                <p class="text-blue-400">&gt; Navigating to search engine</p>
+                                <p class="text-blue-400">&gt; Taking screenshot of search results</p>
+                                <p class="text-green-400">Web search performed. Screenshot of results saved to 'search_results_20230615_143512.png'</p>
+                                <p class="text-green-400">User: Visit the Python.org website</p>
+                                <p class="text-gray-400">&gt; Thinking...</p>
+                                <p class="text-blue-400">&gt; Navigating to Python.org</p>
+                                <p class="text-white">BROWSE_WEB(url="https://www.python.org")</p>
+                                <p class="text-green-400">Successfully navigated to https://www.python.org</p>
+                                <p class="text-blue-400">&gt; Taking screenshot of the page</p>
+                                <p class="text-white">SCREENSHOT_WEB()</p>
+                                <p class="text-green-400">Screenshot saved to 'screenshot_20230615_143545.png'</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Example 3: Code Execution -->
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700" data-aos="fade-up" data-aos-delay="250">
+                        <div class="p-6">
+                            <h3 class="text-xl font-medium text-white">Code Execution</h3>
+                            <p class="mt-2 text-gray-300">
+                                Execute Python and JavaScript code directly from the agent.
+                            </p>
+                        </div>
+                        <div class="terminal">
+                            <div class="terminal-header">
+                                <div class="terminal-button terminal-button-red"></div>
+                                <div class="terminal-button terminal-button-yellow"></div>
+                                <div class="terminal-button terminal-button-green"></div>
+                            </div>
+                            <div class="terminal-content">
+                                <p class="text-green-400">User: Run some Python code to check system information</p>
+                                <p class="text-gray-400">&gt; Thinking...</p>
+                                <p class="text-blue-400">&gt; Executing Python code</p>
+                                <p class="text-white">EXECUTE_PYTHON(code="import platform\nimport sys\n\nprint(f'Python version: {sys.version}')\nprint(f'Platform: {platform.platform()}')\nprint(f'Processor: {platform.processor()}')")</p>
+                                <p class="text-green-400">Python code execution results:</p>
+                                <p class="text-white">Standard Output:</p>
+                                <p class="text-white">Python version: 3.9.7 (default, Sep 16 2021, 13:09:58) \n[GCC 7.5.0]</p>
+                                <p class="text-white">Platform: Linux-5.4.0-1065-aws-x86_64-with-glibc2.31</p>
+                                <p class="text-white">Processor: x86_64</p>
+                                <p class="text-white">Return Code: 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section id="getting-started" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-950">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
+                        Getting Started
+                    </h2>
+                    <p class="mt-3 max-w-3xl mx-auto text-lg text-gray-300" data-aos="fade-up" data-aos-delay="100">
+                        Follow these steps to set up and start using AgentCLI on your system.
+                    </p>
+                    <p class="mt-2 max-w-3xl mx-auto text-md text-gray-400" data-aos="fade-up" data-aos-delay="150">
+                        AgentCLI is designed to be easy to install and configure, with minimal dependencies and straightforward setup. The following guide will help you get started quickly.
+                    </p>
+                </div>
+
+                <div class="mt-16">
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700" data-aos="fade-up" data-aos-delay="150">
+                        <div class="p-6">
+                            <h3 class="text-xl font-medium text-white mb-4">Installation</h3>
+
+                            <div class="code-block">
+                                <div class="code-block-header">Terminal</div>
+                                <pre><code class="language-bash"># Clone the repository
+git clone https://github.com/kynlos/agent-cli.git
+cd agent-cli
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up your API key
+export GEMINI_API_KEY='your_api_key_here'  # Linux/Mac
+# or
+set GEMINI_API_KEY=your_api_key_here  # Windows CMD
+# or
+$env:GEMINI_API_KEY='your_api_key_here'  # Windows PowerShell</code></pre>
+                            </div>
+
+                            <h3 class="text-xl font-medium text-white mt-8 mb-4">Running AgentCLI</h3>
+
+                            <div class="code-block">
+                                <div class="code-block-header">Terminal</div>
+                                <pre><code class="language-bash"># Start the agent
+python agent_cli.py</code></pre>
+                            </div>
+
+                            <h3 class="text-xl font-medium text-white mt-8 mb-4">Configuration</h3>
+                            <p class="text-gray-300 mb-4">
+                                You can customize AgentCLI by modifying the CONFIG dictionary in the agent_cli.py file. The configuration allows you to fine-tune the agent's behavior, enable or disable features, and adjust performance settings to match your needs.
+                            </p>
+                            <p class="text-gray-400 mb-4">
+                                The configuration is organized into logical sections for server connections, model settings, feature flags, and performance optimizations. Each setting has sensible defaults, but you can adjust them to suit your specific requirements.
+                            </p>
+
+                            <div class="code-block">
+                                <div class="code-block-header">Python</div>
+                                <pre><code class="language-python">CONFIG = {
+    # Server connections
+    "memory_server_url": "http://localhost:8000",  # URL for the memory server
+    "puppeteer_server_url": "http://localhost:3000",  # URL for the web browser server
+    "memory_id": "agent_cli_memory_v3",  # Unique identifier for this agent's memory
+    "memory_server_enabled": True,  # Set to False if you don't want to use the memory server
+    "puppeteer_server_enabled": True,  # Set to False if you don't need web browsing
+
+    # Model configuration
+    "model": "gemini-2.5-pro-exp-03-25",  # Gemini model to use
+    "model_temperature": 0.4,  # Lower for more deterministic responses, higher for more creative
+    "model_max_output_tokens": 8192,  # Maximum tokens in model responses
+
+    # Feature flags - enable or disable specific capabilities
+    "enable_code_execution": True,  # Allow Python/JavaScript execution
+    "enable_file_diff": True,  # Enable file comparison
+    "enable_clipboard": True,  # Enable clipboard operations
+    "enable_image_generation": False,  # Disabled by default, requires additional API
+
+    # Performance settings
+    "enable_response_cache": True,  # Cache API responses to reduce token usage
+    "cache_expiry_seconds": 3600,  # Cache entries expire after 1 hour
+    "enable_parallel_processing": True,  # Enable multi-threading for certain operations
+    "max_worker_threads": 4,  # Maximum number of worker threads
+    "show_progress_bars": True,  # Show progress indicators for long operations
+
+    # Safety settings
+    "confirm_risky_actions": True,  # Ask before executing commands or deleting files
+    "command_timeout": 120,  # Timeout for command execution in seconds
+    "max_file_size_read": 5 * 1024 * 1024,  # 5MB max file size for reading
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl" data-aos="fade-up">
+                        Frequently Asked Questions
+                    </h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-300" data-aos="fade-up" data-aos-delay="100">
+                        Common questions about AgentCLI.
+                    </p>
+                </div>
+
+                <div class="mt-16" x-data="{selected:null}">
+                    <div class="space-y-4">
+                        <!-- FAQ Item 1 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="150">
+                            <button @click="selected !== 1 ? selected = 1 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">What is AgentCLI?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 1}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 1" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    AgentCLI is an advanced autonomous AI assistant that operates in a think-act-observe loop. It can perform various tasks such as file operations, command execution, web browsing, code execution, and more, all from your terminal. It uses the Gemini API to power its AI capabilities, providing state-of-the-art reasoning and problem-solving abilities.
+                                </p>
+                                <p class="mt-2 text-gray-400">
+                                    Unlike simple command-line tools, AgentCLI can understand complex natural language requests, break them down into manageable steps, and execute them autonomously while adapting to changing conditions and learning from its observations. It maintains a sophisticated memory system that allows it to build context across multiple interactions.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="200">
+                            <button @click="selected !== 2 ? selected = 2 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">Is AgentCLI secure?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 2}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 2" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    AgentCLI has built-in safety features such as confirmation prompts for risky actions like executing commands or deleting files. It also implements file size limits, execution timeouts, and careful path resolution to prevent unintended consequences.
+                                </p>
+                                <p class="mt-2 text-gray-400">
+                                    However, as with any tool that can execute commands, you should use it responsibly and be aware of the actions it's taking. You can adjust the safety settings in the configuration to match your comfort level, including disabling potentially risky features entirely or requiring confirmation for more action types.
+                                </p>
+                                <p class="mt-2 text-gray-400">
+                                    The agent is designed to be transparent about its actions, showing you what it's thinking and doing at each step, so you can always intervene if needed.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 3 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="250">
+                            <button @click="selected !== 3 ? selected = 3 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">Do I need an API key?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 3}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 3" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    Yes, you need a Gemini API key to use AgentCLI. You can obtain one from the Google AI Studio website. Once you have your API key, you can set it as an environment variable as shown in the Getting Started section.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 4 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="300">
+                            <button @click="selected !== 4 ? selected = 4 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">Can I extend AgentCLI with custom actions?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 4}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 4" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    Yes, AgentCLI is designed to be extensible. You can add custom actions by implementing new methods in the AgentCLI class and updating the system prompt to include your new actions. The modular design makes it easy to add new capabilities.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 5 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="350">
+                            <button @click="selected !== 5 ? selected = 5 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">What operating systems are supported?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 5}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 5" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    AgentCLI is designed to work on Windows, macOS, and Linux. It includes platform-specific adaptations for features like clipboard operations and terminal handling to ensure a consistent experience across different operating systems.
+                                </p>
+                                <p class="mt-2 text-gray-400">
+                                    The agent automatically detects your operating system and adjusts its behavior accordingly, such as using the appropriate command syntax and file path conventions. This cross-platform compatibility makes it a versatile tool for developers working in mixed environments.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Item 6 -->
+                        <div class="bg-gray-800 rounded-lg border border-gray-700" data-aos="fade-up" data-aos-delay="400">
+                            <button @click="selected !== 6 ? selected = 6 : selected = null" class="flex justify-between items-center w-full px-6 py-4 text-left">
+                                <span class="text-lg font-medium text-white">How is performance optimized in AgentCLI?</span>
+                                <svg class="h-6 w-6 text-primary-500" :class="{'transform rotate-180': selected == 6}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="selected == 6" class="px-6 pb-4">
+                                <p class="text-gray-300">
+                                    AgentCLI 2.0 includes several performance optimizations to ensure smooth operation even with complex tasks:
+                                </p>
+                                <ul class="mt-2 text-gray-400 list-disc pl-5 space-y-1">
+                                    <li>Response caching reduces API calls by storing and reusing responses for similar queries</li>
+                                    <li>Parallel processing enables multi-threaded execution for long-running operations</li>
+                                    <li>Progress tracking with tqdm provides visual feedback for time-consuming tasks</li>
+                                    <li>Streaming responses from the API allows for faster initial response times</li>
+                                    <li>Memory pruning prevents excessive memory usage during long sessions</li>
+                                    <li>Configurable timeouts prevent operations from hanging indefinitely</li>
+                                </ul>
+                                <p class="mt-2 text-gray-400">
+                                    These optimizations make AgentCLI responsive and efficient, even when handling resource-intensive tasks like file searches across large codebases or complex web interactions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 border-t border-gray-800 mt-24">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-center">
+                <div class="flex items-center">
+                    <span class="text-primary-500 text-2xl font-bold">AgentCLI</span>
+                </div>
+                <p class="mt-2 text-base text-gray-400">
+                    Autonomous AI Assistant for your terminal
+                </p>
+                <div class="mt-8 md:mt-0">
+                    <p class="text-center text-base text-gray-400">
+                        &copy; <script>document.write(new Date().getFullYear())</script> AgentCLI by Kynlo Akari. All rights reserved.
+                    </p>
+                </div>
+                <div class="mt-4 flex justify-center space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-primary-400">
+                        <span class="sr-only">GitHub</span>
+                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary-400">
+                        <span class="sr-only">Twitter</span>
+                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize AOS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        });
+    </script>
+</body>
+</html>
