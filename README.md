@@ -31,6 +31,11 @@ With AgentCLI 2.0, you get enhanced performance, expanded capabilities, and a mo
 - **Text Summarization**: Summarize long text content efficiently
 - **Memory Management**: Persistent state across sessions
 - **Performance Optimizations**: Response caching, parallel processing, and more
+- **Image Analysis**: Analyze images using vision models
+- **Data Visualization**: Create charts and visualizations from data
+- **Git Operations**: Clone repositories, check status, and commit changes
+- **Database Operations**: Execute SQL queries against databases
+- **Voice Input/Output**: Convert speech to text and text to speech
 
 ## 📋 Table of Contents
 
@@ -221,6 +226,12 @@ CONFIG = {
 - **enable_file_diff**: Enable file comparison functionality
 - **enable_clipboard**: Enable clipboard operations
 - **enable_image_generation**: Enable image generation (requires additional API)
+- **enable_image_analysis**: Enable image analysis using vision models
+- **enable_data_visualization**: Enable data visualization capabilities
+- **enable_git_operations**: Enable Git repository operations
+- **enable_database_operations**: Enable database query operations
+- **enable_voice_input**: Enable speech-to-text conversion
+- **enable_voice_output**: Enable text-to-speech conversion
 
 #### Performance Settings
 
@@ -433,6 +444,94 @@ User: Summarize a long article
 Recent advances in AI language models show impressive capabilities in understanding and generating human language, but face challenges including resource requirements, potential for generating incorrect information, and bias concerns. Ongoing research and responsible deployment are needed to balance capabilities with limitations and risks.
 ```
 
+#### Image Analysis
+
+```
+User: Analyze this image of a sunset
+
+[THINKING] I'll use the image analysis capability to analyze the sunset image.
+
+[ACTION] ANALYZE_IMAGE(image_path="sunset.jpg")
+
+[OBSERVATION] Image Analysis for 'sunset.jpg':
+
+The image shows a stunning sunset over a body of water. The sky is painted in vibrant hues of orange, red, and purple as the sun descends toward the horizon. Silhouettes of trees or possibly a shoreline are visible along the bottom edge of the frame. The water reflects the colorful sky, creating a mirror-like effect. The overall composition creates a peaceful, serene atmosphere typical of sunset photography. The contrast between the bright sky and darker foreground elements adds depth to the image.
+```
+
+#### Data Visualization
+
+```
+User: Create a bar chart from this data
+
+[THINKING] I'll use the data visualization capability to create a bar chart.
+
+[ACTION] VISUALIZE_DATA(data="[{\"month\": \"January\", \"sales\": 1200}, {\"month\": \"February\", \"sales\": 1500}, {\"month\": \"March\", \"sales\": 1800}, {\"month\": \"April\", \"sales\": 1400}, {\"month\": \"May\", \"sales\": 2000}]", chart_type="bar", title="Monthly Sales")
+
+[OBSERVATION] Bar chart created and saved to 'visualization_bar_20230615_144512.png'.
+```
+
+#### Git Operations
+
+```
+User: Clone the repository and check its status
+
+[THINKING] I'll use the git operations to clone a repository and check its status.
+
+[ACTION] GIT_CLONE(repo_url="https://github.com/example/repo.git", target_dir="example-repo")
+
+[OBSERVATION] Repository cloned successfully to 'example-repo'.
+
+[ACTION] GIT_STATUS(repo_dir="example-repo")
+
+[OBSERVATION] Git status for repository at 'example-repo':
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+```
+
+#### Database Operations
+
+```
+User: Query the SQLite database for all users
+
+[THINKING] I'll use the database operations to query the SQLite database.
+
+[ACTION] QUERY_DATABASE(connection_string="sqlite:///users.db", query="SELECT * FROM users LIMIT 5")
+
+[OBSERVATION] Query executed successfully. Returned 5 rows.
+
+id | name      | email                  | age
+---|-----------|-----------------------|----
+1  | John Doe  | john.doe@example.com  | 32
+2  | Jane Smith| jane.smith@example.com| 28
+3  | Bob Johnson| bob.j@example.com    | 45
+4  | Alice Brown| alice.b@example.com  | 35
+5  | Charlie Lee| charlie@example.com  | 41
+```
+
+#### Voice Operations
+
+```
+User: Convert this text to speech
+
+[THINKING] I'll use the text-to-speech capability to convert the text to speech.
+
+[ACTION] TEXT_TO_SPEECH(text="Hello, this is AgentCLI speaking. I can now convert text to speech and speech to text.", output_file="greeting.mp3")
+
+[OBSERVATION] Text converted to speech and saved to 'greeting.mp3'. Audio playback started.
+
+User: Listen to what I'm saying and transcribe it
+
+[THINKING] I'll use the speech-to-text capability to transcribe the user's speech.
+
+[ACTION] SPEECH_TO_TEXT(duration=10)
+
+[OBSERVATION] Speech from microphone (duration: 10s) converted to text:
+
+This is a test of the speech recognition capability in AgentCLI. It can now understand what I'm saying and convert it to text.
+```
+
 ## 🔍 How It Works
 
 AgentCLI operates in a sophisticated think-act-observe loop, leveraging Google's Gemini API to accomplish tasks autonomously with remarkable precision and adaptability.
@@ -459,7 +558,7 @@ In the action phase, AgentCLI:
 - Handles complex operations with appropriate error handling
 - Manages resources efficiently for long-running operations
 
-The agent can perform 17+ different actions, from simple file operations to complex web interactions and code execution.
+The agent can perform 25+ different actions, from simple file operations to complex web interactions, code execution, image analysis, data visualization, database operations, and voice processing.
 
 #### 3. Observe
 
@@ -481,6 +580,11 @@ AgentCLI maintains a comprehensive memory system that tracks:
 - Web browsing state and screenshots
 - Command execution history and outputs
 - Code execution results and outputs
+- Image analysis results
+- Data visualizations
+- Git repository states
+- Database query results
+- Voice recordings and transcriptions
 
 This memory system allows the agent to build context across multiple interactions, refer back to previous actions, and make informed decisions based on the evolving state of the environment.
 
@@ -640,6 +744,58 @@ The text summarization feature uses the Gemini API to condense long text into co
 - Summarizing articles or documentation
 - Extracting key points from long discussions
 - Creating executive summaries of reports
+
+### Image Analysis
+
+The image analysis feature uses vision models to analyze and describe images:
+
+- **Image Description**: Generate detailed descriptions of image content
+- **Object Detection**: Identify objects, people, and scenes in images
+- **Text Extraction**: Extract text visible in images
+
+This feature is useful for understanding image content, making images accessible, and extracting information from visual media.
+
+### Data Visualization
+
+The data visualization feature creates charts and graphs from structured data:
+
+- **Bar Charts**: Visualize categorical data or comparisons
+- **Line Charts**: Show trends over time or continuous data
+- **Pie Charts**: Display proportions or percentages
+- **Scatter Plots**: Reveal relationships between variables
+- **Heatmaps**: Visualize complex data matrices
+
+Visualization types are automatically selected based on data characteristics or can be manually specified.
+
+### Git Integration
+
+The Git integration feature allows interaction with Git repositories:
+
+- **Clone Repositories**: Clone remote repositories to local directories
+- **Check Status**: View the current state of a repository
+- **Commit Changes**: Commit modifications with descriptive messages
+
+This enables version control operations directly from the agent interface.
+
+### Database Operations
+
+The database operations feature allows executing SQL queries against databases:
+
+- **Query Execution**: Run SELECT, INSERT, UPDATE, and DELETE queries
+- **Result Formatting**: Display query results in formatted tables
+- **Parameter Binding**: Use parameterized queries for security
+
+Supports various database types through SQLAlchemy connection strings.
+
+### Voice Input/Output
+
+The voice processing features enable speech interaction:
+
+- **Text-to-Speech**: Convert text to spoken audio with different voices
+- **Speech-to-Text**: Transcribe speech from microphone or audio files
+- **Audio Playback**: Automatically play generated speech
+
+This enables hands-free interaction and accessibility features.
 
 ### Progress Tracking
 
